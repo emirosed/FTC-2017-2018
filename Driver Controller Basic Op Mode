@@ -1,70 +1,115 @@
-package org.firstinspires.ftc.robotcontroller.external.samples;
-
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import org.firstinspires.ftc.teamcode.utils.*;
 
-(name = "Basic: Driver Control Period ", Group = "Iterative Driver Mode")
+(name = "driver control", group = "drive")
 
-BasicOpMode_Iterative extends OpMode
+public class DriveTest extends OpMode
 
 
 {
-
-    private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor leftDrive = null;
-    private DcMotor rightDrive = null;
-
-
-
-    public void init() 
-    {
-        telemetry.addData("Status", "Initialized");
-        
-        leftDrive  = hardwareMap.get(DcMotor.class, "left_drive");
-        rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
-
-        leftDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightDrive.setDirection(DcMotor.Direction.REVERSE);
-
-        telemetry.addData("Status", "Initialized");
-    }
-
-    public void init_loop() {
+   private DcMotor leftfront;
+    private DcMotor leftback;
+    private DcMotor rightfront;
+    private DcMotor rightback;
+    private DcMotor intake;
+    private DcMotor 
+    ControlLIVE diagnostic;
+    DebugLogPrime log;
+    public void init()
    
-   }
-
-    public void start() 
-    
-    {
-        runtime.reset();
+   
+   {
+        leftfront= hardwareMap.dcMotor.get("motor_0");
+        leftback= hardwareMap.dcMotor.get("motor_3");
+        rightfront= hardwareMap.dcMotor.get("motor_1");
+        rightback= hardwareMap.dcMotor.get("motor_2");
+        intake= hardwareMap.dcMotor.get("motor_5");
+        leftfront.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftback.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftfront.setZeroPower(DcMotor.ZeroPower.BRAKE);
+        leftback.setZeroPower(DcMotor.ZeroPower.BRAKE);
+        rightfront.setZeroPower(DcMotor.ZeroPower.BRAKE);
+        rightback.setZeroPower(DcMotor.ZeroPower.BRAKE);
+        diagnostic = new ControlLIVE(gamepad1, gamepad2, telemetry);
+        log = new DebugLogPrime("DriverLog.txt", telemetry);
     }
 
     public void loop() 
     
     {
-        double leftPower;
-        double rightPower;
 
-        double drive = -gamepad1.left_stick_y;
-        double turn  =  gamepad1.right_stick_x;
-        leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
-        rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
-
-        leftDrive.setPower(leftPower);
-        rightDrive.setPower(rightPower);
-
-        telemetry.addData("Status", "Run Time: " + runtime.toString());
-        telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
+      if(Math.abs(gamepad1.left_stick_y) > 0.1) 
+      {
+          leftfront.setPower(gamepad1.left_stick_y);
+          rightfront.setPower(-1 * gamepad1.left_stick_y);
+          leftback.setPower(-1 * gamepad1.left_stick_y);
+          rightback.setPower(gamepad1.left_stick_y);
+      }
+      
+      
+      
+      else if(Math.abs(gamepad1.right_stick_x) > 0.1) 
+      {
+      
+          leftfront.setPower(gamepad1.right_stick_x);
+          rightfront.setPower(gamepad1.right_stick_x);
+          leftback.setPower(gamepad1.right_stick_x);
+          rightback.setPower(gamepad1.right_stick_x);
+      }
+      
+      
+      if(gamepad1.right_trigger > 0.05)
+      {
+              rightfront.setPower(1);
+              rightback.setPower(1);
+              leftfront.setPower(-1);
+              leftback.setPower(-1);
+      }
+      
+      
+      
+      else if(gamepad1.left_trigger > 0.05)
+      {
+              leftfront.setPower(1);
+              leftback.setPower(1);
+              rightfront.setPower(-1);
+              rightback.setPower(-1);
+      }
+      
+      
+      
+      if(Math.abs(gamepad1.left_stick_y) < 0.1 && Math.abs(gamepad1.right_stick_x) < 0.1
+              && gamepad1.right_trigger < 0.05 && gamepad1.left_trigger < 0.05)
+      {
+          leftfront.setPower(0);
+          leftback.setPower(0);
+          rightfront.setPower(0);
+          rightback.setPower(0);
+      }
+      
+      
+      
+        if(gamepad2.right_intakewheel){
+            intake.setPower(1);
+        }
+        
+        else if(gamepad2.left_intakewheel){
+            intake.setPower(-1);
+        }
+        else{
+            succyboi.setPower(0);
+        }
+        telemetry.addData("left front", leftfront.getPower());
+        telemetry.addData("right front", rightfront.getPower());
+        telemetry.addData("left back", leftback.getPower());
+        telemetry.addData("right back", rightback.getPower());
+        try {
+            Thread.sleep(5);
+        } catch (InterruptedException e) {
+            telemetry.addData("Error", "Oops Try Again");
+        }
     }
-
-
-    public void stop() 
-    {
-    
-    }
-
 }
